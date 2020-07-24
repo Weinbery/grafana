@@ -79,7 +79,7 @@ interface ImportMapModule {
   path: string;
 }
 
-const appendImportMap = (modules: ImportMapModule[], reprocessImportMaps: boolean): Promise<HTMLScriptElement> => {
+const appendImportMap = (modules: ImportMapModule[]): Promise<HTMLScriptElement> => {
   const script = document.createElement('script');
   script.type = 'systemjs-importmap';
   script.textContent = JSON.stringify({
@@ -90,7 +90,7 @@ const appendImportMap = (modules: ImportMapModule[], reprocessImportMaps: boolea
   document.body.append(script);
 
   // Wait for import map
-  return SystemJS.prepareImport(reprocessImportMaps).then(() => script);
+  return SystemJS.prepareImport().then(() => script);
 };
 
 // Exported for tests
@@ -130,10 +130,7 @@ const resolveModulePath = (key: string, isPluginModule = false): string => {
 };
 
 // Exported for tests
-export const exposeAsyncModules = async (
-  modules: ExposedModuleConfig[],
-  reloadImportMaps = false
-): Promise<ExposedModulesConfig> => {
+export const exposeAsyncModules = async (modules: ExposedModuleConfig[]): Promise<ExposedModulesConfig> => {
   const TEMP_URL = '__temp';
 
   const semiCompleteModules = modules.map(
@@ -147,7 +144,7 @@ export const exposeAsyncModules = async (
       } as CompleteExposedModuleConfig)
   );
 
-  const script = await appendImportMap(semiCompleteModules, reloadImportMaps);
+  const script = await appendImportMap(semiCompleteModules);
 
   // `SystemJS.resolve` failed if `SystemJS.prepareImport` was not called
   const completeModules = semiCompleteModules.map(

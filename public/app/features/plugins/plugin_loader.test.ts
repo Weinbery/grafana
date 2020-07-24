@@ -17,6 +17,9 @@ import { AppPluginMeta, PluginMetaInfo, PluginType, AppPlugin } from '@grafana/d
 // Loaded after the `unmock` above
 import { exposeAsyncModules, ExposedModulesConfig, importAppPlugin } from './plugin_loader';
 
+// Support appending new import maps
+import 'systemjs/dist/extras/dynamic-import-maps';
+
 class MyCustomApp extends AppPlugin {
   initWasCalled = false;
   calledTwice = false;
@@ -33,22 +36,18 @@ describe('Load App', () => {
   let exposedModulesConfig: ExposedModulesConfig | undefined;
 
   beforeAll(async () => {
-    exposedModulesConfig = await exposeAsyncModules(
-      [
-        {
-          isPluginModule: true,
-          key: modulePath,
-          value: { plugin: app },
-        },
-      ],
-      true
-    );
+    exposedModulesConfig = await exposeAsyncModules([
+      {
+        isPluginModule: true,
+        key: modulePath,
+        value: { plugin: app },
+      },
+    ]);
   });
 
   afterAll(() => {
     exposedModulesConfig?.modules.forEach(({ url }) => SystemJS.delete(url));
     exposedModulesConfig?.importMap.remove();
-    return SystemJS.prepareImport(true); // reprocess all
   });
 
   it('calls init and sets meta', async () => {
